@@ -29,7 +29,7 @@ function startOAuth() {
   const slackAuthUrl = `https://slack.com/oauth/v2/authorize?${stringify({
     client_id: SLACK_CLIENT_ID,
     redirect_uri: SLACK_REDIRECT_URI,
-    scope: "identity",
+    scope: "identity.avatar,identity.basic",
     state: "unique_state_token", // for CSRF protection
   })}`;
 
