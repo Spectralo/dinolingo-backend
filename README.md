@@ -1,15 +1,17 @@
 # dinolingo-backend
 
-To install dependencies:
+For now, its goal is to keep slack app client ID secure.
+
+## How to run
 
 ```bash
-bun install
+    bun install
+    bun run index.js
 ```
 
-To run:
+## Setup
 
-```bash
-bun run index.js
-```
-
-This project was created using `bun init` in bun v1.1.10. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+You need to export 3 env variables:
+- SLACK_CLIENT_ID
+- SLACK_CLIENT_SECRET
+- SLACK_REDIRECT_URI
