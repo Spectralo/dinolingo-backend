@@ -1,21 +1,24 @@
 console.log("Starting dinolingo backend ....");
 
 import { serve } from "bun";
-import { stringify } from "querystring";
 
 const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = Bun.env.SLACK_CLIENT_SECRET;
 const SLACK_REDIRECT_URI = Bun.env.SLACK_REDIRECT_URI;
 const PORT = Bun.env.DINOPORT;
 
+if (!SLACK_CLIENT_ID || !SLACK_CLIENT_SECRET || !SLACK_REDIRECT_URI || !PORT) {
+  throw new Error("Missing required environment variables");
+}
+
 serve({
   port: PORT,
   fetch(req) {
     const url = new URL(req.url);
 
-    if (url.pathname === "/oauth/start") {
+    if (url.pathname === "/oauth/start" && req.method === "GET") {
       return startOAuth();
-    } else if (url.pathname === "/oauth/callback") {
+    } else if (url.pathname === "/oauth/callback" && req.method === "GET") {
       const code = url.searchParams.get("code");
       if (!code) return new Response("Missing code", { status: 400 });
       return handleOAuthCallback(code);
@@ -26,12 +29,14 @@ serve({
 
 // Start OAuth flow by redirecting to Slack's OAuth URL
 function startOAuth() {
-  const slackAuthUrl = `https://slack.com/oauth/v2/authorize?${stringify({
+  const params = new URLSearchParams({
     client_id: SLACK_CLIENT_ID,
     redirect_uri: SLACK_REDIRECT_URI,
     scope: "profile",
-    state: "unique_state_token", // for CSRF protection
-  })}`;
+    state: generateStateToken(), // for CSRF protection
+  });
+
+  const slackAuthUrl = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
 
   return Response.redirect(slackAuthUrl, 302);
 }
@@ -39,15 +44,17 @@ function startOAuth() {
 // Handle OAuth callback and exchange code for access token
 async function handleOAuthCallback(code) {
   try {
+    const params = new URLSearchParams({
+      client_id: SLACK_CLIENT_ID,
+      client_secret: SLACK_CLIENT_SECRET,
+      code,
+      redirect_uri: SLACK_REDIRECT_URI,
+    });
+
     const tokenResponse = await fetch("https://slack.com/api/oauth.v2.access", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: stringify({
-        client_id: SLACK_CLIENT_ID,
-        client_secret: SLACK_CLIENT_SECRET,
-        code,
-        redirect_uri: SLACK_REDIRECT_URI,
-      }),
+      body: params.toString(),
     });
 
     const tokenData = await tokenResponse.json();
@@ -65,4 +72,9 @@ async function handleOAuthCallback(code) {
     console.error("Error during token exchange:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
+}
+
+// Generate a state token for CSRF protection
+function generateStateToken() {
+  return Math.random().toString(36).substring(2);
 }
