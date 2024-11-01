@@ -32,11 +32,11 @@ function startOAuth() {
   const params = new URLSearchParams({
     client_id: SLACK_CLIENT_ID,
     redirect_uri: SLACK_REDIRECT_URI,
-    scope: "profile",
-    state: generateStateToken(), // for CSRF protection
+    scope: "profile,openid",
+    response_type: "code",
   });
 
-  const slackAuthUrl = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
+  const slackAuthUrl = `https://slack.com/openid/connect/authorize?${params.toString()}`;
 
   return Response.redirect(slackAuthUrl, 302);
 }
@@ -49,21 +49,22 @@ async function handleOAuthCallback(code) {
       client_secret: SLACK_CLIENT_SECRET,
       code,
       redirect_uri: SLACK_REDIRECT_URI,
+      grant_type: "authorization_code",
     });
 
-    const tokenResponse = await fetch("https://slack.com/api/oauth.v2.access", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
+    const tokenResponse = await fetch(
+      "https://slack.com/api/openid.connect.token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      },
+    );
 
     const tokenData = await tokenResponse.json();
 
     if (tokenData.ok) {
-      const { access_token, team } = tokenData;
-      return new Response(JSON.stringify({ access_token, team }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      console.log(tokenData);
     } else {
       console.error("Error from Slack:", tokenData.error);
       return new Response(`OAuth failed: ${tokenData.error}`, { status: 400 });
@@ -72,9 +73,4 @@ async function handleOAuthCallback(code) {
     console.error("Error during token exchange:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
-}
-
-// Generate a state token for CSRF protection
-function generateStateToken() {
-  return Math.random().toString(36).substring(2);
 }
