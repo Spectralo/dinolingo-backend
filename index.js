@@ -64,7 +64,7 @@ async function handleOAuthCallback(code) {
     const tokenData = await tokenResponse.json();
 
     if (tokenData.ok) {
-      Response.redirect("com.spectralo.dino://", 302);
+      return Response.redirect("com.spectralo.dino://", 302);
     } else {
       console.error("Error from Slack:", tokenData.error);
       return new Response(`OAuth failed: ${tokenData.error}`, { status: 400 });
