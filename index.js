@@ -65,7 +65,7 @@ async function handleOAuthCallback(code) {
 
     if (tokenData.ok) {
       return Response.redirect(
-        "com.spectralo.dino://welcome?token=" + tokenData.access_token,
+        "com.spectralo.dino://?token=" + tokenData.access_token,
         302,
       );
     } else {
