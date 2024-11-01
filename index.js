@@ -6,10 +6,10 @@ import { stringify } from "querystring";
 const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = Bun.env.SLACK_CLIENT_SECRET;
 const SLACK_REDIRECT_URI = Bun.env.SLACK_REDIRECT_URI;
+const PORT = Bun.env.DINOPORT;
 
 serve({
-  port: 3000,
-
+  port: PORT,
   fetch(req) {
     const url = new URL(req.url);
 
@@ -20,7 +20,6 @@ serve({
       if (!code) return new Response("Missing code", { status: 400 });
       return handleOAuthCallback(code);
     }
-
     return new Response("Not Found", { status: 404 });
   },
 });

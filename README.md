@@ -15,3 +15,4 @@ You need to export 3 env variables:
 - SLACK_CLIENT_ID
 - SLACK_CLIENT_SECRET
 - SLACK_REDIRECT_URI
+- DINOPORT
