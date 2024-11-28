@@ -13,6 +13,6 @@ For now, its goal is to keep slack app client ID secure.
 
 You need to export 3 env variables:
 - SLACK_CLIENT_ID
-- SLACK_CLIENT_SECRET
+- SLACK_CLIENT_SECRETC
 - SLACK_REDIRECT_URI
 - DINOPORT

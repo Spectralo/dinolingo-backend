@@ -1,11 +1,14 @@
 console.log("Starting dinolingo backend ....");
 
 import { serve } from "bun";
+import { write } from "bun";
 
-const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID;
-const SLACK_CLIENT_SECRET = Bun.env.SLACK_CLIENT_SECRET;
-const SLACK_REDIRECT_URI = Bun.env.SLACK_REDIRECT_URI;
-const PORT = Bun.env.DINOPORT;
+const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID || "1234567890.1234567890";
+const SLACK_CLIENT_SECRET =
+  Bun.env.SLACK_CLIENT_SECRET || "1234567890abcdef1234567890abcdef";
+const SLACK_REDIRECT_URI =
+  Bun.env.SLACK_REDIRECT_URI || "https://example.com/oauth/callback";
+const PORT = Bun.env.DINOPORT || 3000;
 
 if (!SLACK_CLIENT_ID || !SLACK_CLIENT_SECRET || !SLACK_REDIRECT_URI || !PORT) {
   throw new Error("Missing required environment variables");
@@ -23,6 +26,11 @@ serve({
       if (!code) return new Response("Missing code", { status: 400 });
       return handleOAuthCallback(code);
     }
+    if (url.pathname === "/upload" && req.method === "POST") {
+      console.log("YEAH UPLOAD !");
+      return handleFileUpload(req);
+    }
+
     return new Response("Not Found", { status: 404 });
   },
 });
@@ -74,6 +82,30 @@ async function handleOAuthCallback(code) {
     }
   } catch (error) {
     console.error("Error during token exchange:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
+}
+
+async function handleFileUpload(req) {
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file");
+
+    if (!file) {
+      return new Response("No file uploaded", { status: 400 });
+    }
+
+    // Assuming you want to save the file to the local filesystem
+    const filePath = `./uploads/${file.name}`;
+
+    await write(filePath, file.stream());
+
+    console.log(`File uploaded successfully: ${file.name}`);
+    return new Response(`File uploaded successfully: ${file.name}`, {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error handling file upload:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }
