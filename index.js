@@ -89,19 +89,21 @@ async function handleOAuthCallback(code) {
 async function handleFileUpload(req) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file");
+    const base64Data = formData.get("file");
 
-    if (!file) {
+    if (!base64Data) {
       return new Response("No file uploaded", { status: 400 });
     }
 
-    // Assuming you want to save the file to the local filesystem
-    const filePath = `./uploads/${file.name}`;
+    // Decode base64 data
+    const buffer = Buffer.from(base64Data, "base64");
 
-    await write(filePath, file.stream());
+    // Save the image
+    const filePath = `./uploads/drawing_${Date.now()}.png`;
+    await write(filePath, buffer);
 
-    console.log(`File uploaded successfully: ${file.name}`);
-    return new Response(`File uploaded successfully: ${file.name}`, {
+    console.log(`File uploaded successfully: ${filePath}`);
+    return new Response(`File uploaded successfully: ${filePath}`, {
       status: 200,
     });
   } catch (error) {
