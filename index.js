@@ -3,11 +3,11 @@ console.log("Starting dinolingo backend ....");
 import { serve } from "bun";
 import { write } from "bun";
 
-const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID || "1234567890.1234567890";
-const SLACK_CLIENT_SECRET =
-  Bun.env.SLACK_CLIENT_SECRET || "1234567890abcdef1234567890abcdef";
+const SLACK_CLIENT_ID = Bun.env.SLACK_CLIENT_ID;
+const SLACK_CLIENT_SECRET = Bun.env.SLACK_CLIENT_SECRET;
 const SLACK_REDIRECT_URI =
-  Bun.env.SLACK_REDIRECT_URI || "https://example.com/oauth/callback";
+  Bun.env.SLACK_REDIRECT_URI ||
+  "https://dino.spectralo.hackclub.app/oauth/callback";
 const PORT = Bun.env.DINOPORT || 3000;
 
 if (!SLACK_CLIENT_ID || !SLACK_CLIENT_SECRET || !SLACK_REDIRECT_URI || !PORT) {
