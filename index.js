@@ -27,7 +27,6 @@ serve({
       return handleOAuthCallback(code);
     }
     if (url.pathname === "/upload" && req.method === "POST") {
-      console.log("YEAH UPLOAD !");
       return handleFileUpload(req);
     }
 
@@ -90,6 +89,9 @@ async function handleFileUpload(req) {
   try {
     const formData = await req.formData();
     const base64Data = formData.get("file");
+    const name = formData.get("name");
+
+    console.log("File sent by : " + name);
 
     if (!base64Data) {
       return new Response("No file uploaded", { status: 400 });
@@ -101,6 +103,10 @@ async function handleFileUpload(req) {
     // Save the image
     const filePath = `./uploads/drawing_${Date.now()}.png`;
     await write(filePath, buffer);
+
+    // Save the name
+    const namePath = `./uploads/name_${Date.now()}.txt`;
+    await write(namePath, name);
 
     console.log(`File uploaded successfully: ${filePath}`);
     return new Response(`File uploaded successfully: ${filePath}`, {
